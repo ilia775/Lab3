@@ -135,7 +135,6 @@ public:
 //template <typename T>
 //T FuncPtr<T>::ChackValue = T();
 //int rand(int min, int max) { return rand() % max + min; }
-
 int rand(int min, int max)
 {
     return min + rand() % (max - min + 1);
@@ -260,6 +259,21 @@ private:
 
 //typedef complex(*ComplexFuncPtr1)(complex);
 
+template<class T>
+void sort_arr(T* arr, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            if (arr[i] < arr[j])
+            {
+                swap(arr[i], arr[j]);
+            }
+        }
+    }
+}
+
 istream& operator>>(istream& in, complex& c)
 {
     cout << "Re: ";
@@ -287,6 +301,10 @@ double abs(complex num)
 {
     return sqrt(num.GetRe() * num.GetRe() + num.GetIm() * num.GetIm());
 }
+template <typename T>
+class BinaryTree;
+template<typename T>
+BinaryTree<T>* GenBalancedTree(T* bmass, int len);
 
 string GenRandomString(const int len) {
     static const char alphanum[] =
@@ -310,16 +328,16 @@ private:
     string FirstName;
     string MiddleName;
     string LastName;
-    time_t BirthDate;
+    long long BirthDate;
 public:
     Person()
     {
         ID = count;
         count++;
-        FirstName = string();//"Иван";
-        MiddleName = string();//"Иванович";
-        LastName = string();//"Иванов";
-        BirthDate = time_t();//time(NULL) - rand();
+        FirstName = "-";//"Иван";
+        MiddleName = "-";//"Иванович";
+        LastName = "-";//"Иванов";
+        BirthDate = time(NULL);//time(NULL) - rand();
     }
     Person(string FirstName, string MiddleName, string LastName, time_t BirthDate)
     {
@@ -355,7 +373,13 @@ public:
     string& GetMiddleName() { return MiddleName; }
     string& GetLastName() { return LastName; }
     string GetFullName() { return MiddleName + " " + FirstName + " " + LastName;}
-    string GetBirthDate() { return asctime(gmtime(&BirthDate)); }
+    string GetBirthDate() 
+    {
+        /*string ret = asctime(gmtime(&BirthDate));
+        ret.resize(ret.length() - 1);
+        return ret; */
+        return to_string(BirthDate);
+    }
     time_t& GetBirthTime() { return BirthDate; }
     bool operator>(Person* other)
     {
@@ -495,9 +519,14 @@ public:
     }
     bool operator==(Student* other)
     {
-        if (this->GetId() == other->GetId() && this->GetFullName() == other->GetFullName() && this->GetStudyCourse() == other->GetStudyCourse() && this->GetInstitution() == other->GetInstitution() && this->GetGroup() == other->GetGroup() && this->GetYear() == other->GetYear()) return 1;
-        else return 0;
+        return (this->GetId() == other->GetId() && this->GetFullName() == other->GetFullName() && this->GetStudyCourse() == other->GetStudyCourse() && this->GetInstitution() == other->GetInstitution() && this->GetGroup() == other->GetGroup() && this->GetYear() == other->GetYear());
     }
+
+    bool operator==(Student other)
+    {
+        return (this->GetId() == other.GetId() && this->GetFullName() == other.GetFullName() && this->GetStudyCourse() == other.GetStudyCourse() && this->GetInstitution() == other.GetInstitution() && this->GetGroup() == other.GetGroup() && this->GetYear() == other.GetYear());
+    }
+
     Student& operator+(Student other)
     {
         Student* temp = new Student();
@@ -517,9 +546,9 @@ public:
     {
         Student* temp = new Student();
         temp->SetBirthDate(this->GetBirthTime() * other.GetBirthTime());
-        temp->SetYear(Year + other.Year);
+        temp->SetYear(Year * other.Year);
         temp->SetFirstName(this->GetFirstName());
-        temp->SetGroup(Group + other.GetGroup());
+        temp->SetGroup(Group);
         temp->SetID(this->GetId() * other.GetId());
         temp->SetInstitution(Institution);
         temp->SetLastName(this->GetLastName());
@@ -540,7 +569,7 @@ public:
 
 ostream& operator<<(ostream& out, Student& p)
 {
-    out << p.GetFullName() + " " + to_string(p.GetId()) + " " + to_string(p.GetBirthTime()) + " " + p.GetGroup() + " " + p.GetInstitution() + " " + p.GetStudyCourse() + " " + to_string(p.GetYear());
+    out << p.GetFullName() + " " + to_string(p.GetId()) + " " + p.GetBirthDate() + " " + p.GetGroup() + " " + p.GetInstitution() + " " + p.GetStudyCourse() + " " + to_string(p.GetYear());
     return out;
 }
 
@@ -593,19 +622,39 @@ public:
     string& GetSubject() { return Subject; }
 };
 
-string to_string(Student* p)
+//string to_string(Student* p)
+//{
+//    return p->GetFullName() + "_" + to_string(p->GetId()) + "_" + to_string(p->GetBirthTime()) + "_" + p->GetGroup() + "_" + p->GetInstitution() + "_" + p->GetStudyCourse() + "_" + to_string(p->GetYear());
+//}
+
+string to_string(string text)
 {
-    return p->GetFullName() + "_" + to_string(p->GetId()) + "_" + to_string(p->GetBirthTime()) + "_" + p->GetGroup() + "_" + p->GetInstitution() + "_" + p->GetStudyCourse() + "_" + to_string(p->GetYear());
+    return text;
 }
 
-string to_string(Teacher* p)
+string to_string(complex num)
 {
-    return p->GetFullName() + "_" + to_string(p->GetId()) + "_" + p->GetBirthDate() + "_" + p->GetSubject();
+    return to_string(num.GetRe()) + "+" + to_string(num.GetIm()) + "i";
+}
+
+string to_string(Student p)
+{
+    return p.GetFullName() + "_" + to_string(p.GetId()) + "_" + to_string(p.GetBirthTime()) + "_" + p.GetGroup() + "_" + p.GetInstitution() + "_" + p.GetStudyCourse() + "_" + to_string(p.GetYear());
+}
+
+//string to_string(Teacher* p)
+//{
+//    return p->GetFullName() + "_" + to_string(p->GetId()) + "_" + p->GetBirthDate() + "_" + p->GetSubject();
+//}
+
+string to_string(Teacher p)
+{
+    return p.GetFullName() + "_" + to_string(p.GetId()) + "_" + p.GetBirthDate() + "_" + p.GetSubject();
 }
 
 ostream& operator<<(ostream& out, Teacher& p)
 {
-    out << p.GetFullName() + " " + to_string(p.GetId()) + " " + /*p.GetBirthDate() +*/ " " + p.GetSubject();
+    out << p.GetFullName() + " " + to_string(p.GetId()) + " " + p.GetBirthDate() + " " + p.GetSubject();
     return out;
 }
 
@@ -690,7 +739,7 @@ void* TemplateRand(int randmax = 1000, int strmin = 5, int strmax = 20)
     }
     else if (typeid(T).name() == typeid(Student).name())
     {
-        return new Student(GenRandomString(rand(strmin, strmax)), GenRandomString(rand(strmin, strmax)), GenRandomString(rand(strmin, strmax)), rand(1, 1000000000), GenRandomString(rand(strmin, strmax)), GenRandomString(1) + "-" + to_string(rand(100,999)), GenRandomString(rand(strmin, strmax)), rand(1,5));
+        return new Student(GenRandomString(rand(strmin, strmax)), GenRandomString(rand(strmin, strmax)), GenRandomString(rand(strmin, strmax)), 946080000 + rand(100000000, 157680000), GenRandomString(rand(strmin, strmax)), GenRandomString(1) + "-" + to_string(rand(100,999)), GenRandomString(rand(strmin, strmax)), rand(1,5));
     }
     else if (typeid(T).name() == typeid(Teacher).name())
     {
@@ -746,6 +795,14 @@ public:
             this->Insert(mass[i]);
         }
     }
+
+    /*~BinaryTree()
+    {
+        delete Data;
+        if (LeftRoot != nullptr) delete LeftRoot;
+        if (RightRoot != nullptr) delete RightRoot;
+    }*/
+
     T& GetData()
     {
         return *Data;
@@ -756,10 +813,23 @@ public:
         return LeftRoot;
     }
 
+    void BlanceTree()
+    {
+        int len = this->GetSize();
+        T* mass = new T[len];
+        this->GetMass(mass);
+        sort_arr<T>(mass, len);
+        BinaryTree<T>* newtree = GenBalancedTree(mass, len);
+        delete this;
+        this = newtree;
+    }
+
     BinaryTree<T>* GetRightRoot()
     {
         return RightRoot;
     }
+
+    
 
     BinaryTree<T>* GetLeftSubTree()
     {
@@ -924,7 +994,7 @@ public:
                 //cout << typeid(T).name()<<"  "<< atof(temp_s.c_str()) << endl;
                 if (typeid(T).name() == typeid(double).name())
                 {
-                    *(T*)temp_t = T(atof(temp_s.c_str()));
+                    *(T*)temp_t = atof(temp_s.c_str());
                 }
                 if (typeid(T).name() == typeid(string).name())
                 {
@@ -938,7 +1008,7 @@ public:
                 {
                     *(Teacher*) temp_t = Teacher(temp_s);
                 }
-                else *(T*) temp_t = T(atoi(temp_s.c_str()));
+                else *(T*) temp_t = atoi(temp_s.c_str());
                 this->Insert(*(T*)temp_t);
                 getline(iss, temp_s, '\"');
             }
@@ -990,11 +1060,31 @@ public:
         return i;
     }
 
-    void Balance()
+    BinaryTree<T>* GetSubTree(T num)
     {
-        T* list = new T[this->GetSize()];
-
+        if (num == *Data)
+        {
+            
+            int len = this->GetSize();
+            T* mass = new T[len];
+            this->GetMass(mass);
+            BinaryTree<T>* newtree = new BinaryTree<T>(this);
+            return newtree;
+        }
+        if (num > *Data)
+        {
+            if (RightRoot == nullptr) return NULL;
+            return RightRoot->GetSubTree(num);
+        }
+        if (num < *Data)
+        {
+            if (LeftRoot == nullptr) return NULL;
+            return LeftRoot->GetSubTree(num);
+        }
+        return NULL;
     }
+
+
     void GetMass(T* mass, int* size = new int())
     {
         if (this != NULL)
@@ -1096,8 +1186,8 @@ public:
     bool CheckSubTree(BinaryTree<T>* other)
     {
         string s1 = string(), s2 = string();
-        s1 = this->ToString("RootRightLeft", 1);
-        s2 = other->ToString("RootRightLeft",1);
+        s1 = this->ToString("RootLeftRight", 1);
+        s2 = other->ToString("RootLeftRight",1);
         if (s1.find(s2) != string::npos)
         {
             return true;
@@ -1463,11 +1553,11 @@ void map(BinaryTree<T>* tree, T(*f)(T, T),T num,  BinaryTree<T>* newtree)
     {
         newtree->Insert(f(tree->GetData(), num));
     }
-    if (tree->GetLeftRoot() != NULL)
+    if (tree->GetLeftRoot() != nullptr)
     {
         map(tree->GetLeftSubTree(), f, num, newtree);
     }
-    if (tree->GetRightRoot() != NULL)
+    if (tree->GetRightRoot() != nullptr)
     {
         map(tree->GetRightSubTree(), f, num, newtree);
     }
@@ -1495,20 +1585,7 @@ void map(BinaryTree<T>* tree, T(*f)(T, T),T num,  BinaryTree<T>* newtree)
     }*/
 }
 
-template<class T>
-void sort_arr(T* arr, int size)
-{
-    for (int i = 0; i < size; i++)
-    {
-        for (int j = 0; j < size; j++)
-        {
-            if (arr[i] < arr[j])
-            {
-                swap(arr[i], arr[j]);
-            }
-        }
-    }
-}
+
 
 
 template<typename T>
@@ -1524,6 +1601,27 @@ BinaryTree<T>* _GenBalancedTree(T* barr, int start, int end)
     Tree->Insert(_GenBalancedTree(barr, start, mid - 1));
     Tree->Insert(_GenBalancedTree(barr, mid + 1, end));
     return Tree;
+}
+
+template<typename T>
+T _GetBalancedArr(T* bmass, T* newmass, int start, int end)
+{
+    if (end < start)
+    {
+        return NULL;
+    }
+    int mid = (start + end) / 2;
+    newmass[start] = _GetBalancedArr(bmass, newmass, start, mid - 1);
+    newmass[mid + 1] = _GetBalancedArr(bmass, newmass, mid + 1, end);
+    return bmass[mid];
+}
+
+template<typename T>
+T* GetBalancedArr(T* bmass, int len)
+{
+    T* newmass = new T[len];
+    _GetBalancedArr(bmass, newmass,  0, len - 1);
+    return newmass;
 }
 
 template <typename T>
@@ -1578,6 +1676,152 @@ BinaryTree<T>* MergeTrees(BinaryTree<T>* tree1, BinaryTree<T>* tree2)
     BinaryTree<T>* newtree = new BinaryTree<T>(mass, size1);
     return newtree;*/
     return GenBalancedTree(mass, size);
+}
+
+template<typename T>
+void pretreetostring(BinaryTree<T>* tree)
+{
+    int choice = 0;
+    while (1)
+    {
+        choice = 0;
+        cout << "Выберите обход: \n1. КЛП.\n2. КПЛ.\n3. ПЛК.\n4. ПКЛ.\n5. ЛПК.\n6. ЛКП.\n";
+        cin >> choice;
+        if (choice == 1)
+        {
+            cout << tree->ToString("RootLeftRight");
+        }
+        else if (choice == 2)
+        {
+            cout << tree->ToString("RootRightLeft");
+        }
+        else if (choice == 3)
+        {
+            cout << tree->ToString("RightLeftRoot");
+        }
+        else if (choice == 4)
+        {
+            cout << tree->ToString("RightRootLeft");
+        }
+        else if (choice == 5)
+        {
+            cout << tree->ToString("LeftRightRoot");
+        }
+        else if (choice == 6)
+        {
+            cout << tree->ToString("LeftRootRight");
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+}
+
+template <typename T>
+void precheckelem(BinaryTree<T>* tree)
+{
+    string s1 = tree->ToString();
+    string s2 = string();
+    T* temp = new T();
+    while (1)
+    {
+        int choice;
+        cout << "Выебите способ задания: \n1. Случайный.\n2. Ручной.\n";
+        cin >> choice;
+        if (choice == 1)
+        {
+            temp = (T*)TemplateRand<T>();
+            break;
+        }
+        else if (choice == 2)
+        {
+            cout << "Введите объкт типа " << typeid(T).name() << ": ";
+            cin >> *temp;
+            break;
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+    cout << "Элемент: " << *temp << endl;
+    s2 = to_string(*temp);
+    if (s1.find(s2))
+    {
+        cout << "Данный элемент входит в дерево.\n";
+    }
+    else
+    {
+        cout << "Данный элемент не входит в дерево.\n";
+    }
+}
+
+template <typename T>
+void prechecksubtree(BinaryTree<T>* tree)
+{
+    T* temp = new T();
+    int num = 0;
+    T* mass;
+    //int len = tree->GetSize();
+    while (1)
+    {
+        cout << "Выберите способ задания: \n1. Случайный.\n2. Ручной.\n";
+        int choice = 0;
+        num = 0;
+        cin >> choice;
+        cout << "Введите количество элементов поддерева(>0): ";
+        cin >> num;
+        if (num <= 0)
+        {
+            cout << "Неверный ввод.\n";
+            cin.clear();
+            while (cin.get() != '\n');
+            continue;
+        }
+        mass = new T[num];
+        if (choice == 1)
+        {
+            
+            for (int i = 0; i < num; i++)
+            {
+                mass[i] = *(T*)TemplateRand<T>();
+            }
+            break;
+        }
+        else if (choice == 2)
+        {
+            cout << "Задайте "<<num<<" элементов типа "<<typeid(T).name()<<": ";
+            
+            for (int i = 0; i < num; i++)
+            {
+                cin >> *temp;
+                mass[i] = *temp;
+            }
+            break;
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+    BinaryTree<T>* newtree = new BinaryTree<T>(mass,num);
+    cout << "Получнное поддерево: \n";
+    newtree->Print();
+    if (tree->CheckSubTree(newtree))
+    {
+        cout << "Данное поддерево присутвует в дереве.\n";
+    }
+    else
+    {
+        cout << "Данное поддерево не присутвует в дереве.\n";
+    }
 }
 
 template <typename T>
@@ -1654,6 +1898,167 @@ BinaryTree<T>* premap(BinaryTree<T>* tree, T(*f)(T, T), T num, BinaryTree<T>* ne
     }
 }
 
+template <typename T>
+BinaryTree<T>* pregetsubtree(BinaryTree<T>* tree)
+{
+    T* temp = new T();
+    int len = tree->GetSize();
+    while (1)
+    {
+        cout << "Выберите способ задания: \n1. Случайный.\n2. Ручной.\n";
+        int choice = 0;
+        cin >> choice;
+        if (choice == 1)
+        {
+            T* mass = new T[len];
+            tree->GetMass(mass);
+            *temp = mass[rand(0, len - 1)];
+            cout << "Случайный элемент: " << *temp << endl;
+            break;
+        }
+        else if (choice == 2)
+        {
+            cout << "Задайте элемент: ";
+            cin >> *temp;
+            T* mass = new T[len];
+            tree->GetMass(mass);
+            bool is_in_tree = false;
+            for (int i = 0; i < len; i++)
+            {
+                if (mass[i] == *temp) is_in_tree = true;
+            }
+            if (!is_in_tree)
+            {
+                cout << "В дереве не наден такое элемент.\n";
+                continue;
+            }
+            break;
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+    BinaryTree<T>* newtree = tree->GetSubTree(*temp);
+    cout << "Получнное поддерево: \n";
+    newtree->Print();
+    while (1)
+    {
+        cout << "Заменить этим деревом исходное?(y/n): ";
+        string answ = "";
+        cin >> answ;
+        if (answ == "y")
+        {
+            delete tree;
+            tree = nullptr;
+            return newtree;
+            break;
+        }
+        else if (answ == "n")
+        {
+            delete newtree;
+            newtree = nullptr;
+            return tree;
+            break;
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+}
+
+template <typename T>
+BinaryTree<T>* premerge(BinaryTree<T>* tree1)
+{
+    BinaryTree<T>* tree2 = new BinaryTree<T>();
+    BinaryTree<T>* newtree = new BinaryTree<T>();
+    while (1)
+    {
+        cout << "Выберите способ ввода дерева: \n1. Случайны.\n2. Ручной.\n";
+        int choice1 = 0, num = 0;
+        cin >> choice1;
+        while (1)
+        {
+            
+            cout << "Введите количество элементов дерева: ";
+            cin >> num;
+            if (num <= 0)
+            {
+                cout << "Неверный ввод." << endl;
+            }
+            else
+            {
+                break;
+            }
+        }
+        if (choice1 == 1)
+        {
+            T* temp = new T();
+            for (int i = 0; i < num; i++)
+            {
+                temp = (T*)TemplateRand<T>();
+                tree2->Insert(*temp);
+            }
+            cout << "Дерево для слияния: \n";
+            tree2->Print();
+            newtree = MergeTrees(tree1, tree2);
+            break;
+        }
+        else if (choice1 == 2)
+        {
+            
+            cout << "Введите " << num << " элемнтов типа " << typeid(T).name();
+            T temp = T();
+            for (int i = 0; i < num; i++)
+            {
+                cin >> temp;
+                tree2->Insert(temp);
+            }
+            cout << "Дерево для слияния: \n";
+            tree2->Print();
+            newtree = MergeTrees(tree1, tree2);
+            break;
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+    cout << "Получившиеся дерево:\n";
+    newtree->Print();
+    while (1)
+    {
+        cout << "Заменить этим деревом исходное?(y/n): ";
+        string answ = "";
+        cin >> answ;
+        if (answ == "y")
+        {
+            delete tree1;
+            return newtree;
+            break;
+        }
+        else if (answ == "n")
+        {
+            delete newtree;
+            return tree1;
+            break;
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+}
+
 void Interface()
 {
     int choice1 = 0, choice2 = 0, choice3 = 0;
@@ -1681,7 +2086,7 @@ void Interface()
                     cin >> num;
                     if (num <= 0)
                     {
-                        cout << "Неверный ввод\n";
+                        cout << "Неверный ввод.\n";
                         cin.clear();
                         while (cin.get() != '\n');
                     }
@@ -1720,7 +2125,7 @@ void Interface()
                     cin >> num;
                     if (num <= 0)
                     {
-                        cout << "Неверный ввод\n";
+                        cout << "Неверный ввод.\n";
                         cin.clear();
                         while (cin.get() != '\n');
                     }
@@ -1758,7 +2163,7 @@ void Interface()
                     cin >> num;
                     if (num <= 0)
                     {
-                        cout << "Неверный ввод\n";
+                        cout << "Неверный ввод.\n";
                         cin.clear();
                         while (cin.get() != '\n');
                     }
@@ -1797,7 +2202,7 @@ void Interface()
                 cin >> num;
                 if (num <= 0)
                 {
-                    cout << "Неверный ввод\n";
+                    cout << "Неверный ввод.\n";
                     cin.clear();
                     while (cin.get() != '\n');
                 }
@@ -1814,10 +2219,10 @@ void Interface()
             }
             if (choice3 == 2)
             {
-                int len = rand(1, 20);
+                //int len = rand(1, 20);
                 for (int i = 0; i < num; i++)
                 {
-                    temp = GenRandomString(len);
+                    temp = GenRandomString(rand(5, 20));
                     ((BinaryTree<string>*)Tree)->Insert(temp);
                 }
             }
@@ -1903,7 +2308,7 @@ void Interface()
                 cin >> num;
                 if (num <= 0)
                 {
-                    cout << "Неверный ввод\n";
+                    cout << "Неверный ввод.\n";
                     cin.clear();
                     while (cin.get() != '\n');
                 }
@@ -1971,7 +2376,7 @@ void Interface()
                     temp1 = GenRandomString(rand(1, 15));
                     temp.SetStudyCourse(temp1);
                     temp1 = GenRandomString(rand(1, 15));
-                    temp.SetBirthDate(time(NULL) - rand());
+                    temp.SetBirthDate(static_cast<time_t>(946080000) + rand(100000000, 157680000));
                     temp.SetInstitution(temp1);
                     temp.SetGroup(GenRandomString(1) + "-" + to_string(rand(100, 999)));
                     temp.SetYear(rand(1, 5));
@@ -1995,7 +2400,7 @@ void Interface()
                 cin >> num;
                 if (num <= 0)
                 {
-                    cout << "Неверный ввод\n";
+                    cout << "Неверный ввод.\n";
                     cin.clear();
                     while (cin.get() != '\n');
                 }
@@ -2063,7 +2468,7 @@ void Interface()
             }
             else 
             {
-                cout << "Неверный ввод\n";
+                cout << "Неверный ввод.\n";
                 cin.clear();
                 while (cin.get() != '\n');
             }
@@ -2076,7 +2481,7 @@ void Interface()
             }
             else
             {
-                cout << "Выберите действие: \n1. Построить новое дерево поэлементным преобразованием.\n2. Построить новое дерево, в которое входят лишь те узлы исходного, которые удовлетворяют заданному условию.\n3. Слияние деревьев.\n4. Извлечение поддерева(по заданному элементу).\n5. Поиск на вхождение поддерева\n6. Поиск элемента на вхождение.\n7. Сохранение в строку в соответствии с обходом.\n8. Поиск узла по пути.\n9. Втавить элемент.\n10. Удалить элемент.\n";
+                cout << "Выберите действие: \n1. Построить новое дерево поэлементным преобразованием.\n2. Построить новое дерево, в которое входят лишь те узлы исходного, которые удовлетворяют заданному условию.\n3. Слияние деревьев.\n4. Извлечение поддерева(по заданному элементу).\n5. Поиск на вхождение поддерева.\n6. Поиск элемента на вхождение.\n7. Сохранение в строку в соответствии с обходом.\n8. Поиск узла по пути.\n9. Втавить элемент.\n10. Удалить элемент.\n11. Балансировка дерева.\n";
                 cin >> choice2;
                 if (choice2 == 1)
                 {
@@ -2174,7 +2579,7 @@ void Interface()
                                 }
                                 else 
                                 {
-                                    cout << "Неверный ввод\n";
+                                    cout << "Неверный ввод.\n";
                                     cin.clear();
                                     while (cin.get() != '\n');
                                 }
@@ -2193,17 +2598,17 @@ void Interface()
                                 if (typeofdata == typeid(int).name())
                                 {
                                     BinaryTree<int>* newtree = new BinaryTree<int>();
-                                    premap((BinaryTree<int>*)Tree, mult, *(int*)TemplateRand<int>(), newtree, 1);
+                                    Tree = premap((BinaryTree<int>*)Tree, mult, *(int*)TemplateRand<int>(), newtree, 1);
                                 }
                                 if (typeofdata == typeid(double).name())
                                 {
                                     BinaryTree<double>* newtree = new BinaryTree<double>();
-                                    premap((BinaryTree<double>*)Tree, mult, *(double*)TemplateRand<double>(), newtree, 1);
+                                    Tree = premap((BinaryTree<double>*)Tree, mult, *(double*)TemplateRand<double>(), newtree, 1);
                                 }
                                 if (typeofdata == typeid(complex).name())
                                 {
                                     BinaryTree<complex>* newtree = new BinaryTree<complex>();
-                                    premap((BinaryTree<complex>*)Tree, mult, *(complex*)TemplateRand<complex>(), newtree, 1);
+                                    Tree = premap((BinaryTree<complex>*)Tree, mult, *(complex*)TemplateRand<complex>(), newtree, 1);
                                 }
                                 if (typeofdata == typeid(string).name())
                                 {
@@ -2214,12 +2619,12 @@ void Interface()
                                 if (typeofdata == typeid(Student).name())
                                 {
                                     BinaryTree<Student>* newtree = new BinaryTree<Student>();
-                                    premap((BinaryTree<Student>*)Tree, mult, *(Student*)TemplateRand<Student>(), newtree, 1);
+                                    Tree = premap((BinaryTree<Student>*)Tree, mult, *(Student*)TemplateRand<Student>(), newtree, 1);
                                 }
                                 if (typeofdata == typeid(Teacher).name())
                                 {
                                     BinaryTree<Teacher>* newtree = new BinaryTree<Teacher>();
-                                    premap((BinaryTree<Teacher>*)Tree, mult, *(Teacher*)TemplateRand<Teacher>(), newtree, 1);
+                                    Tree = premap((BinaryTree<Teacher>*)Tree, mult, *(Teacher*)TemplateRand<Teacher>(), newtree, 1);
                                 }
                                 break;
                             }
@@ -2231,21 +2636,21 @@ void Interface()
                                     BinaryTree<int>* newtree = new BinaryTree<int>();
                                     int temp = int();
                                     cin >> temp;
-                                    premap((BinaryTree<int>*)Tree, mult, temp, newtree, 2);
+                                    Tree = premap((BinaryTree<int>*)Tree, mult, temp, newtree, 2);
                                 }
                                 if (typeofdata == typeid(double).name())
                                 {
                                     BinaryTree<double>* newtree = new BinaryTree<double>();
                                     double temp = double();
                                     cin >> temp;
-                                    premap((BinaryTree<double>*)Tree, mult, temp, newtree, 2);
+                                    Tree = premap((BinaryTree<double>*)Tree, mult, temp, newtree, 2);
                                 }
                                 if (typeofdata == typeid(complex).name())
                                 {
                                     BinaryTree<complex>* newtree = new BinaryTree<complex>();
                                     complex temp = complex();
                                     cin >> temp;
-                                    premap((BinaryTree<complex>*)Tree, mult, temp, newtree, 2);
+                                    Tree = premap((BinaryTree<complex>*)Tree, mult, temp, newtree, 2);
                                 }
                                 if (typeofdata == typeid(string).name())
                                 {
@@ -2260,20 +2665,20 @@ void Interface()
                                     BinaryTree<Student>* newtree = new BinaryTree<Student>();
                                     Student temp = Student();
                                     cin >> temp;
-                                    premap((BinaryTree<Student>*)Tree, mult, temp, newtree, 2);
+                                    Tree = premap((BinaryTree<Student>*)Tree, mult, temp, newtree, 2);
                                 }
                                 if (typeofdata == typeid(Teacher).name())
                                 {
                                     BinaryTree<Teacher>* newtree = new BinaryTree<Teacher>();
                                     Teacher temp = Teacher();
                                     cin >> temp;
-                                    premap((BinaryTree<Teacher>*)Tree, mult, temp, newtree, 2);
+                                    Tree = premap((BinaryTree<Teacher>*)Tree, mult, temp, newtree, 2);
                                 }
                                 break;
                             }
                             else
                             {
-                                cout << "Неверный ввод\n";
+                                cout << "Неверный ввод.\n";
                                 cin.clear();
                                 while (cin.get() != '\n');
                             }
@@ -2282,7 +2687,7 @@ void Interface()
                         }
                         else
                         {
-                            cout << "Неверный ввод\n";
+                            cout << "Неверный ввод.\n";
                             cin.clear();
                             while (cin.get() != '\n');
                         }
@@ -2384,7 +2789,7 @@ void Interface()
                             }
                             else
                             {
-                                cout << "Неверный ввод\n";
+                                cout << "Неверный ввод.\n";
                                 cin.clear();
                                 while (cin.get() != '\n');
                             }
@@ -2481,7 +2886,7 @@ void Interface()
                             }
                             else
                             {
-                                cout << "Неверный ввод\n";
+                                cout << "Неверный ввод.\n";
                                 cin.clear();
                                 while (cin.get() != '\n');
                             }
@@ -2490,7 +2895,7 @@ void Interface()
                     }
                     else
                     {
-                        cout << "Неверный ввод\n";
+                        cout << "Неверный ввод.\n";
                         cin.clear();
                         while (cin.get() != '\n');
                     }
@@ -2498,110 +2903,154 @@ void Interface()
                 }
                 else if (choice2 == 3)
                 {
-                    while (1)
+                    if (typeid(int).name() == typeofdata)
                     {
-                        cout << "Выберите тип ввода дерева: \n1. Случайный.\n2. Ручной.\n";
-                        cin >> choice3;
-                        int num = 0;
-                        if (choice3 == 1)
-                        {
-                            while (1)
-                            {
-                                num = 0;
-                                cout << "Введите количество элементов дерева: ";
-                                cin >> num;
-                                if (num <= 0)
-                                {
-                                    cout << "Неверный ввод" << endl;
-                                }
-                                else
-                                {
-                                    break;
-                                }
-                            }
-                            if (typeid(int).name() == typeofdata)
-                            {
-                                BinaryTree<int>* Tree2 = new BinaryTree<int>();
-                                for (int i = 0; i < num; i++)
-                                {
-                                    Tree2->Insert(rand(-1000, 1000));
-                                }
-                                cout << "Дерево для слияния: \n";
-                                Tree2->Print();
-                                BinaryTree<int>* newtree = MergeTrees<int>(((BinaryTree<int>*)Tree), Tree2);
-                                cout << "Результирующее дерево: \n";
-                                delete Tree2;
-                                newtree->Print();
-                                while (1)
-                                {
-                                    cout << "Заменить текущее дерево новым?(y/n): ";
-                                    string answ;
-                                    cin >> answ;
-                                    if (answ == "y")
-                                    {
-                                        delete Tree;
-                                        Tree = newtree;
-                                        break;
-                                    }
-                                    else if (answ == "n")
-                                    {
-                                        delete newtree;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        cout << "Неверный ввод.\n";
-                                    }
-                                }
-                            }
-                            else if (typeid(double).name() == typeofdata)
-                            {
-
-                            }
-                            else if (typeid(complex).name() == typeofdata)
-                            {
-
-                            }
-                            else if (typeid(string).name() == typeofdata)
-                            {
-
-                            }
-                            else if (typeid(Student).name() == typeofdata)
-                            {
-
-                            }
-                            break;
-                        }
-                        else if (choice3 == 2)
-                        {
-
-                            break;
-                        }
-                        else
-                        {
-                            cout << "Неверный ввод\n";
-                            cin.clear();
-                            while (cin.get() != '\n');
-                        }
+                        Tree = premerge<int>((BinaryTree<int>*)Tree);
+                    }
+                    else if (typeid(double).name() == typeofdata)
+                    {
+                        Tree = premerge<double>((BinaryTree<double>*)Tree);
+                    }
+                    else if (typeid(complex).name() == typeofdata)
+                    {
+                        Tree = premerge<complex>((BinaryTree<complex>*)Tree);
+                    }
+                    else if (typeid(string).name() == typeofdata)
+                    {
+                        Tree = premerge<string>((BinaryTree<string>*)Tree);
+                    }
+                    else if (typeid(Student).name() == typeofdata)
+                    {
+                        Tree = premerge<Student>((BinaryTree<Student>*)Tree);
+                    }
+                    else if (typeid(Teacher).name() == typeofdata)
+                    {
+                        Tree = premerge<Teacher>((BinaryTree<Teacher>*)Tree);
                     }
                 }
                 else if (choice2 == 4)
                 {
-
+                    {
+                        if (typeid(int).name() == typeofdata)
+                        {
+                            Tree = pregetsubtree<int>((BinaryTree<int>*)Tree);
+                        }
+                        else if (typeid(double).name() == typeofdata)
+                        {
+                            Tree = pregetsubtree<double>((BinaryTree<double>*)Tree);
+                        }
+                        else if (typeid(complex).name() == typeofdata)
+                        {
+                            Tree = pregetsubtree<complex>((BinaryTree<complex>*)Tree);
+                        }
+                        else if (typeid(string).name() == typeofdata)
+                        {
+                            Tree = pregetsubtree<string>((BinaryTree<string>*)Tree);
+                        }
+                        else if (typeid(Student).name() == typeofdata)
+                        {
+                            Tree = pregetsubtree<Student>((BinaryTree<Student>*)Tree);
+                        }
+                        else if (typeid(Teacher).name() == typeofdata)
+                        {
+                            Tree = pregetsubtree<Teacher>((BinaryTree<Teacher>*)Tree);
+                        }
+                    }
                 }
                 else if (choice2 == 5)
                 {
-
+                    if (typeid(int).name() == typeofdata)
+                    {
+                        prechecksubtree<int>((BinaryTree<int>*)Tree);
+                    }
+                    else if (typeid(double).name() == typeofdata)
+                    {
+                        prechecksubtree<double>((BinaryTree<double>*)Tree);
+                    }
+                    else if (typeid(complex).name() == typeofdata)
+                    {
+                        prechecksubtree<complex>((BinaryTree<complex>*)Tree);
+                    }
+                    else if (typeid(string).name() == typeofdata)
+                    {
+                        prechecksubtree<string>((BinaryTree<string>*)Tree);
+                    }
+                    else if (typeid(Student).name() == typeofdata)
+                    {
+                        prechecksubtree<Student>((BinaryTree<Student>*)Tree);
+                    }
+                    else if (typeid(Teacher).name() == typeofdata)
+                    {
+                        prechecksubtree<Teacher>((BinaryTree<Teacher>*)Tree);
+                    }
                 }
                 else if (choice2 == 6)
                 {
-
+                    if (typeid(int).name() == typeofdata)
+                    {
+                        precheckelem<int>((BinaryTree<int>*)Tree);
+                    }
+                    else if (typeid(double).name() == typeofdata)
+                    {
+                        precheckelem<double>((BinaryTree<double>*)Tree);
+                    }
+                    else if (typeid(complex).name() == typeofdata)
+                    {
+                        precheckelem<complex>((BinaryTree<complex>*)Tree);
+                    }
+                    else if (typeid(string).name() == typeofdata)
+                    {
+                        precheckelem<string>((BinaryTree<string>*)Tree);
+                    }
+                    else if (typeid(Student).name() == typeofdata)
+                    {
+                        precheckelem<Student>((BinaryTree<Student>*)Tree);
+                    }
+                    else if (typeid(Teacher).name() == typeofdata)
+                    {
+                        precheckelem<Teacher>((BinaryTree<Teacher>*)Tree);
+                    }
                 }
                 else if (choice2 == 7)
                 {
-
+                    if (typeid(int).name() == typeofdata)
+                    {
+                        pretreetostring<int>((BinaryTree<int>*)Tree);
+                    }
+                    else if (typeid(double).name() == typeofdata)
+                    {
+                        pretreetostring<double>((BinaryTree<double>*)Tree);
+                    }
+                    else if (typeid(complex).name() == typeofdata)
+                    {
+                        pretreetostring<complex>((BinaryTree<complex>*)Tree);
+                    }
+                    else if (typeid(string).name() == typeofdata)
+                    {
+                        pretreetostring<string>((BinaryTree<string>*)Tree);
+                    }
+                    else if (typeid(Student).name() == typeofdata)
+                    {
+                        pretreetostring<Student>((BinaryTree<Student>*)Tree);
+                    }
+                    else if (typeid(Teacher).name() == typeofdata)
+                    {
+                        pretreetostring<Teacher>((BinaryTree<Teacher>*)Tree);
+                    }
                 }
                 else if (choice2 == 8)
+                {
+
+                }
+                else if (choice2 == 9)
+                {
+
+                }
+                else if (choice2 == 10)
+                {
+
+                }
+                else if (choice2 == 11)
                 {
 
                 }
@@ -2623,6 +3072,7 @@ void Interface()
             {
                 delete Tree;
                 Tree = nullptr;
+                typeofdata = "";
                 cout << "Дерево успешно удалено.\n";
             }
         }
@@ -2670,5 +3120,19 @@ int main()
 {
     setlocale(LC_ALL, "ru");
     srand(time(NULL));
+    /*BinaryTree<double>* T1 = new BinaryTree<double>();
+
+    int len = 100;
+    for (int i = 0; i < len; i++)
+    {
+        double temp = doublerand(-10000, 10000);
+        T1->Insert(temp);
+    }
+    string s1 = T1->ToString();
+    BinaryTree<double>* T2 = new BinaryTree<double>(s1);
+    cout << T1->ToString() << endl << T2->ToString() << endl;
+    cout <<  (T2->ToString() == T1->ToString()) << endl;*/
+    //cout << typeid(Teacher).name() << endl;
     Interface();
+    //T1->Bypass("RootRightLeft");
 }
