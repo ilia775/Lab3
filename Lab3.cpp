@@ -1060,6 +1060,43 @@ public:
         return i;
     }
 
+    BinaryTree<T>* GetSubTreeFromPath(string path)
+    {
+        if (path.length() == 0 || path[0] == '\n')
+        {
+            int len = this->GetSize();
+            T* mass = new T[len];
+            this->GetMass(mass);
+            BinaryTree<T>* newtree = new BinaryTree<T>(this);
+            return newtree;
+        }
+        if (path[0] == 'r')
+        {
+            if (RightRoot == nullptr) return NULL;
+            string path1 = string();
+            int len = (int)path.length();
+            path1.resize(len - 1);
+            for (int i = 1; i < len; i++)
+            {
+                path1[i - 1] = path[i];
+            }
+            return RightRoot->GetSubTreeFromPath(path1);
+        }
+        if (path[0] == 'l')
+        {
+            if (LeftRoot == nullptr) return NULL;
+            string path1 = string();
+            int len = (int)path.length();
+            path1.resize(len - 1);
+            for (int i = 1; i < len; i++)
+            {
+                path1[i - 1] = path[i];
+            }
+            return LeftRoot->GetSubTreeFromPath(path1);
+        }
+        return NULL;
+    }
+
     BinaryTree<T>* GetSubTree(T num)
     {
         if (num == *Data)
@@ -1690,26 +1727,121 @@ void pretreetostring(BinaryTree<T>* tree)
         if (choice == 1)
         {
             cout << tree->ToString("RootLeftRight");
+            break;
         }
         else if (choice == 2)
         {
             cout << tree->ToString("RootRightLeft");
+            break;
         }
         else if (choice == 3)
         {
             cout << tree->ToString("RightLeftRoot");
+            break;
         }
         else if (choice == 4)
         {
             cout << tree->ToString("RightRootLeft");
+            break;
         }
         else if (choice == 5)
         {
             cout << tree->ToString("LeftRightRoot");
+            break;
         }
         else if (choice == 6)
         {
             cout << tree->ToString("LeftRootRight");
+            break;
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+}
+//8. Поиск узла по пути.\n9. Втавить элемент.\n10. Удалить элемент.\n11. Балансировка дерева.
+template <typename T>
+BinaryTree<T>* pregetnode(BinaryTree<T>* tree)
+{
+    string s1 = string();
+    T* temp = new T();
+    int num = -1;
+    while (1)
+    {
+        cout << "Выберите способ задания пути: \n1. Случайный.\n2. Ручной.\n";
+        int choice = -1;
+        cin >> choice;
+        cout << "Введите длиину пути(>=0): ";
+        cin >> num;
+        if (num < 0)
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+            continue;
+        }
+        if (choice == 1)
+        {
+            s1.resize(num);
+            for (int i = 0; i < num; i++)
+            {
+                if (rand() % 2 == 1) s1[i] = 'l';
+                if (rand() % 2 == 0) s1[i] = 'r';
+            }
+            break;
+        }
+        else if (choice == 2)
+        {
+            cout << "Введите путь до узла(r - в право, l - в лево): ";
+            cin >> s1;
+            bool is_correct = true;
+            for (int i = 0; i < num; i++)
+            {
+                if (s1[i] != 'r' && s1[i] != 'l')
+                {
+                    is_correct = false;
+                }
+            }
+            if (!is_correct)
+            {
+                cout << "Неверный ввод\n";
+                cin.clear();
+                while (cin.get() != '\n');
+                continue;
+            }
+            break;
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+    BinaryTree<T>* newtree = tree->GetSubTreeFromPath(s1);
+    cout << "Полученный узел(поддерево):\n";
+    newtree->Print();
+    while (1)
+    {
+        cout << "Заменить этим деревом исходное?(y/n): ";
+        string answ = "";
+        cin >> answ;
+        if (answ == "y")
+        {
+            delete tree;
+            tree = nullptr;
+            return newtree;
+            break;
+        }
+        else if (answ == "n")
+        {
+            delete newtree;
+            newtree = nullptr;
+            return tree;
+            break;
         }
         else
         {
@@ -3040,7 +3172,30 @@ void Interface()
                 }
                 else if (choice2 == 8)
                 {
-
+                    if (typeid(int).name() == typeofdata)
+                    {
+                        Tree = pregetnode<int>((BinaryTree<int>*)Tree);
+                    }
+                    else if (typeid(double).name() == typeofdata)
+                    {
+                        Tree = pregetnode<double>((BinaryTree<double>*)Tree);
+                    }
+                    else if (typeid(complex).name() == typeofdata)
+                    {
+                        Tree = pregetnode<complex>((BinaryTree<complex>*)Tree);
+                    }
+                    else if (typeid(string).name() == typeofdata)
+                    {
+                        Tree = pregetnode<string>((BinaryTree<string>*)Tree);
+                    }
+                    else if (typeid(Student).name() == typeofdata)
+                    {
+                        Tree = pregetnode<Student>((BinaryTree<Student>*)Tree);
+                    }
+                    else if (typeid(Teacher).name() == typeofdata)
+                    {
+                        Tree = pregetnode<Teacher>((BinaryTree<Teacher>*)Tree);
+                    }
                 }
                 else if (choice2 == 9)
                 {
