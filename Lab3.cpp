@@ -590,6 +590,16 @@ public:
         
     }
 
+    bool operator==(Teacher other)
+    {
+        return (this->GetId() == other.GetId() && this->GetFullName() == other.GetFullName() && this->GetSubject() == other.GetSubject());
+    }
+
+    bool operator==(Teacher* other)
+    {
+        return (this->GetId() == other->GetId() && this->GetFullName() == other->GetFullName() && this->GetSubject() == other->GetSubject());
+    }
+
     Teacher& operator+(Teacher other)
     {
         Teacher* temp = new Teacher();
@@ -811,6 +821,23 @@ public:
     BinaryTree<T>* GetLeftRoot()
     {
         return LeftRoot;
+    }
+
+    BinaryTree<T>* DeleteElem(T elem)
+    {
+        int len = this->GetSize();
+        T* mass = new T[len];
+        this->GetMass(mass);
+        BinaryTree<T>* newtree = new BinaryTree<T>();
+        for (int i = 0; i < len; i++)
+        {
+            if (!(mass[i] == elem))
+            {
+                newtree->Insert(mass[i]);
+            }
+        }
+        delete this;
+        return newtree;
     }
 
     void BlanceTree()
@@ -1126,10 +1153,13 @@ public:
     {
         if (this != NULL)
         {
-            mass[*size] = *this->Data;
-            (*size)++;
-            RightRoot->GetMass(mass, size);
-            LeftRoot->GetMass(mass, size);
+            if (Data != nullptr)
+            {
+                mass[*size] = *this->Data;
+                (*size)++;
+                RightRoot->GetMass(mass, size);
+                LeftRoot->GetMass(mass, size);
+            }
         }
     }
     void Insert(T item)
@@ -1223,8 +1253,8 @@ public:
     bool CheckSubTree(BinaryTree<T>* other)
     {
         string s1 = string(), s2 = string();
-        s1 = this->ToString("RootLeftRight", 1);
-        s2 = other->ToString("RootLeftRight",1);
+        s1 = this->ToString("RootLeftRight");
+        s2 = other->ToString("RootLeftRight");
         if (s1.find(s2) != string::npos)
         {
             return true;
@@ -1283,7 +1313,7 @@ public:
 
     void Print(int lv = 0)
     {
-        if (this != nullptr && Data != nullptr)
+        if (this != nullptr) if (Data != nullptr)
         {
             this->LeftRoot->Print(lv + 1);
             for (int i = 0; i < lv; i++)
@@ -1428,13 +1458,16 @@ private:
 
     void ToStringRootLeftRight(string& temp, int mode = 0)
     {
-        if (this != nullptr)
+        if (this != nullptr && this!= NULL)
         {
-            temp += "\"";
-            temp += to_string(*Data);
-            //temp += " ";
-            LeftRoot->ToStringRootLeftRight(temp, mode);
-            RightRoot->ToStringRootLeftRight(temp, mode);
+            if (Data != nullptr && Data !=NULL)
+            {
+                temp += "\"";
+                temp += to_string(*Data);
+                //temp += " ";
+                LeftRoot->ToStringRootLeftRight(temp, mode);
+                RightRoot->ToStringRootLeftRight(temp, mode);
+            }
         }
         else if (mode == 1)
         {
@@ -1566,7 +1599,7 @@ bool less_then(T num1, T num2)
 template <typename T>
 void where(BinaryTree<T>* tree, bool(*f)(T, T), T num, BinaryTree<T>* newtree)
 {
-    if (tree != NULL)
+    if (&tree->GetData() != nullptr)
     {
         if (f(tree->GetData(), num))
         {
@@ -1586,7 +1619,7 @@ void where(BinaryTree<T>* tree, bool(*f)(T, T), T num, BinaryTree<T>* newtree)
 template<typename T>
 void map(BinaryTree<T>* tree, T(*f)(T, T),T num,  BinaryTree<T>* newtree)
 {
-    if (tree != NULL)
+    if (&tree->GetData() != NULL)
     {
         newtree->Insert(f(tree->GetData(), num));
     }
@@ -2105,10 +2138,130 @@ BinaryTree<T>* pregetsubtree(BinaryTree<T>* tree)
 }
 
 template <typename T>
+void predelteelem(BinaryTree<T>* tree)
+{
+    T* temp = new T();
+    int num = -1;
+    while (1)
+    {
+        cout << "Выберите способ задания: \n1. Случайный.\n2. Ручной.\n";
+        int choice = -1;
+        cin >> choice;
+        if (choice == 1)
+        {
+            *temp = *(T*)TemplateRand<T>();
+            break;
+        }
+        else if (choice == 2)
+        {
+            cout << "Введите объект класса " << typeid(T).name() << ": ";
+            cin >> *temp;
+            break;
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+    cout << "Объект: " << *temp << endl;
+    int len = tree->GetSize();
+    T* mass = new T[len];
+    tree->GetMass(mass);
+    bool is_found = false;
+    for (int i = 0; i < len; i++)
+    {
+        if (*temp == mass[i])
+        {
+            is_found = true;
+        }
+    }
+    if (!is_found)
+    {
+        cout << "Этот объект не наёден в дереве.\n";
+    }
+    else
+    {
+        tree = tree->DeleteElem(*temp);
+    }
+}
+
+template <typename T>
+BinaryTree<T>* prebalance(BinaryTree<T>* tree)
+{
+    int len = tree->GetSize();
+    T* mass = new T[len];
+    tree->GetMass(mass);
+    sort_arr<T>(mass, len);
+    BinaryTree<T>* newtree = GenBalancedTree(mass, len);
+    cout << "Получившиеся дерево:\n";
+    newtree->Print();
+    while (1)
+    {
+        cout << "Заменить этим деревом исходное?(y/n): ";
+        string answ = "";
+        cin >> answ;
+        if (answ == "y")
+        {
+            delete tree;
+            return newtree;
+            break;
+        }
+        else if (answ == "n")
+        {
+            delete newtree;
+            return tree;
+            break;
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+}
+
+template <typename T>
+void preinsert(BinaryTree<T>* tree)
+{
+    T* temp = new T();
+    int num = -1;
+    while (1)
+    {
+        cout << "Выберите способ задания: \n1. Случайный.\n2. Ручной.\n";
+        int choice = -1;
+        cin >> choice;
+        if (choice == 1)
+        {
+            *temp = *(T*)TemplateRand<T>();
+            break;
+        }
+        else if (choice == 2)
+        {
+            cout << "Введите объект класса " << typeid(T).name() << ": ";
+            cin >> *temp;
+            break;
+        }
+        else
+        {
+            cout << "Неверный ввод\n";
+            cin.clear();
+            while (cin.get() != '\n');
+        }
+    }
+    cout << "Объект: " << *temp << endl;
+    tree->Insert(*temp);
+    cout << "Получившееся дерево:\n";
+    tree->Print();
+}
+
+template <typename T>
 BinaryTree<T>* premerge(BinaryTree<T>* tree1)
 {
     BinaryTree<T>* tree2 = new BinaryTree<T>();
-    BinaryTree<T>* newtree = new BinaryTree<T>();
+    
     while (1)
     {
         cout << "Выберите способ ввода дерева: \n1. Случайны.\n2. Ручной.\n";
@@ -2138,7 +2291,6 @@ BinaryTree<T>* premerge(BinaryTree<T>* tree1)
             }
             cout << "Дерево для слияния: \n";
             tree2->Print();
-            newtree = MergeTrees(tree1, tree2);
             break;
         }
         else if (choice1 == 2)
@@ -2153,7 +2305,6 @@ BinaryTree<T>* premerge(BinaryTree<T>* tree1)
             }
             cout << "Дерево для слияния: \n";
             tree2->Print();
-            newtree = MergeTrees(tree1, tree2);
             break;
         }
         else
@@ -2163,6 +2314,7 @@ BinaryTree<T>* premerge(BinaryTree<T>* tree1)
             while (cin.get() != '\n');
         }
     }
+    BinaryTree<T>* newtree = MergeTrees(tree1, tree2);
     cout << "Получившиеся дерево:\n";
     newtree->Print();
     while (1)
@@ -2874,7 +3026,7 @@ void Interface()
                             }
                             else if (choice4 == 2)
                             {
-                                cout << "Введите данные типа " << typeofdata << " для сложения : ";
+                                cout << "Введите данные типа " << typeofdata << " для сравнения : ";
                                 if (typeofdata == typeid(int).name())
                                 {
                                     BinaryTree<int>* newtree = new BinaryTree<int>();
@@ -2971,7 +3123,7 @@ void Interface()
                             }
                             else if (choice4 == 2)
                             {
-                                cout << "Введите данные типа " << typeofdata << " для сложения : ";
+                                cout << "Введите данные типа " << typeofdata << " для сравнения : ";
                                 if (typeofdata == typeid(int).name())
                                 {
                                     BinaryTree<int>* newtree = new BinaryTree<int>();
@@ -3199,15 +3351,84 @@ void Interface()
                 }
                 else if (choice2 == 9)
                 {
-
+                    if (typeid(int).name() == typeofdata)
+                    {
+                        preinsert<int>((BinaryTree<int>*)Tree);
+                    }
+                    else if (typeid(double).name() == typeofdata)
+                    {
+                        preinsert<double>((BinaryTree<double>*)Tree);
+                    }
+                    else if (typeid(complex).name() == typeofdata)
+                    {
+                        preinsert<complex>((BinaryTree<complex>*)Tree);
+                    }
+                    else if (typeid(string).name() == typeofdata)
+                    {
+                        preinsert<string>((BinaryTree<string>*)Tree);
+                    }
+                    else if (typeid(Student).name() == typeofdata)
+                    {
+                        preinsert<Student>((BinaryTree<Student>*)Tree);
+                    }
+                    else if (typeid(Teacher).name() == typeofdata)
+                    {
+                        preinsert<Teacher>((BinaryTree<Teacher>*)Tree);
+                    }
                 }
                 else if (choice2 == 10)
                 {
-
+                    if (typeid(int).name() == typeofdata)
+                    {
+                        predelteelem<int>((BinaryTree<int>*)Tree);
+                    }
+                    else if (typeid(double).name() == typeofdata)
+                    {
+                        predelteelem<double>((BinaryTree<double>*)Tree);
+                    }
+                    else if (typeid(complex).name() == typeofdata)
+                    {
+                        predelteelem<complex>((BinaryTree<complex>*)Tree);
+                    }
+                    else if (typeid(string).name() == typeofdata)
+                    {
+                        predelteelem<string>((BinaryTree<string>*)Tree);
+                    }
+                    else if (typeid(Student).name() == typeofdata)
+                    {
+                        predelteelem<Student>((BinaryTree<Student>*)Tree);
+                    }
+                    else if (typeid(Teacher).name() == typeofdata)
+                    {
+                        predelteelem<Teacher>((BinaryTree<Teacher>*)Tree);
+                    }
                 }
                 else if (choice2 == 11)
                 {
-
+                    if (typeid(int).name() == typeofdata)
+                    {
+                        Tree = prebalance<int>((BinaryTree<int>*)Tree);
+                    }
+                    else if (typeid(double).name() == typeofdata)
+                    {
+                        Tree = prebalance<double>((BinaryTree<double>*)Tree);
+                    }
+                    else if (typeid(complex).name() == typeofdata)
+                    {
+                        Tree = prebalance<complex>((BinaryTree<complex>*)Tree);
+                    }
+                    else if (typeid(string).name() == typeofdata)
+                    {
+                        Tree = prebalance<string>((BinaryTree<string>*)Tree);
+                    }
+                    else if (typeid(Student).name() == typeofdata)
+                    {
+                        Tree = prebalance<Student>((BinaryTree<Student>*)Tree);
+                    }
+                    else if (typeid(Teacher).name() == typeofdata)
+                    {
+                        Tree = prebalance<Teacher>((BinaryTree<Teacher>*)Tree);
+                    }
                 }
                 else
                 {
