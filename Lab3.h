@@ -373,7 +373,7 @@ private:
 
 //typedef complex(*ComplexFuncPtr1)(complex);
 
-template<class T>
+template<typename T>
 void sort_arr(T* arr, int size)
 {
     for (int i = 0; i < size; i++)
@@ -388,6 +388,63 @@ void sort_arr(T* arr, int size)
     }
 }
 
+template<typename T>
+void sort_arr(T* arr, long long size)
+{
+    for (long long i = 0; i < size; i++)
+    {
+        for (long long j = 0; j < size; j++)
+        {
+            if (arr[i] < arr[j])
+            {
+                swap(arr[i], arr[j]);
+            }
+        }
+    }
+}
+template <typename T>
+void qsortRecursive(T* mas, long long size) {
+    //Указатели в начало и в конец массива
+    long long i = 0;
+    long long j = size - 1;
+
+    //Центральный элемент массива
+    long long mid = mas[size / 2];
+
+    //Делим массив
+    do {
+        //Пробегаем элементы, ищем те, которые нужно перекинуть в другую часть
+        //В левой части массива пропускаем(оставляем на месте) элементы, которые меньше центрального
+        while (mas[i] < mid) {
+            i++;
+        }
+        //В правой части пропускаем элементы, которые больше центрального
+        while (mas[j] > mid) {
+            j--;
+        }
+
+        //Меняем элементы местами
+        if (i <= j) {
+            int tmp = mas[i];
+            mas[i] = mas[j];
+            mas[j] = tmp;
+
+            i++;
+            j--;
+        }
+    } while (i <= j);
+
+
+    //Рекурсивные вызовы, если осталось, что сортировать
+    if (j > 0) {
+        //"Левый кусок"
+        qsortRecursive(mas, j + 1);
+    }
+    if (i < size) {
+        //"Првый кусок"
+        qsortRecursive(&mas[i], size - i);
+    }
+}
 istream& operator>>(istream& in, complex& c)
 {
     cout << "Re: ";
@@ -1136,6 +1193,14 @@ public:
         }
     }
 
+    BinaryTree(T* mass, long long len)
+    {
+        for (long long i = 0; i < len; i++)
+        {
+            this->Insert(mass[i]);
+        }
+    }
+
     BinaryTree(string String, string type = "RootLeftRight")
     {
         if (type == "LeftRightRoot")
@@ -1427,6 +1492,20 @@ public:
             else
                 return false;
         }
+    }
+
+    /*bool CheckElement(T val)
+    {
+        string s1 = " " + this->ToString("RootLeftRight");
+        return (s1.find(to_string(val)) > 0);
+    }*/
+
+    bool CheckElement(T val)
+    {
+        if (Data == nullptr) return 0;
+        if (val == *Data) return true;
+        if (val > *Data) return this->RightRoot->CheckElement(val);
+        if (val < *Data) return this->LeftRoot->CheckElement(val);
     }
 
     bool CheckSubTree(BinaryTree<T>* other)
